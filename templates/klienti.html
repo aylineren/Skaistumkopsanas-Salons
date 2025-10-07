@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Klienti</title>
+</head>
+<body>
+    <header>
+        <h1><a href="/">Annas Salons</a></h1>
+        <nav>
+            <ul>
+                <li><a href="/">Sākums</a></li>
+                <li><a href="/pakalpojumi">Pakalpojumi</a></li>
+                <li><a href="/klienti">Klienti</a></li>
+                <li><a href="/tiksanas">Tikšanās</a></li>
+                <li><a href="/registreties">Reģistrēties</a></li>
+                <li><a href="/pieteikties">Pieteikties</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>Klienti</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vārds</th>
+                    <th>E-mail</th>
+                    <th>Tālrunis</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for klients in klienti %}
+                <tr>
+                    <td>{{ klients.vards }}</td>
+                    <td>{{ klients.email }}</td>
+                    <td>{{ klients.talrunis }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+    <footer>
+        <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>
+    </footer>
+</body>
+</html>

@@ -4,37 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>Pieteikties</title>
+    <title>Reģistrēties</title>
 </head>
 <body>
     <header>
-        <h1>Annas Salons</h1>
+        <h1><a href="/">Annas Salons</a></h1>
         <nav>
             <ul>
-                <li><a href="src\templates\home.html">Sākums</a></li>
-                <li><a href="src\templates\pakalpojumi.html">Pakalpojumi</a></li>
-                <li><a href="src\templates\klienti.html">Klienti</a></li>
-                <li><a href="src\templates\tiksanas.html">Tikšanās</a></li>
-                <li><a href="src\templates\registreties.html">Reģistrēties</a></li>
-                <li><a href="src\templates\pieteikties.html">Pieteikties</a></li>
+                <li><a href="/">Sākums</a></li>
+                <li><a href="/pakalpojumi">Pakalpojumi</a></li>
+                <li><a href="/klienti">Klienti</a></li>
+                <li><a href="/tiksanas">Tikšanās</a></li>
+                <li><a href="/registreties">Reģistrēties</a></li>
+                <li><a href="/pieteikties">Pieteikties</a></li>
             </ul>
         </nav>
     </header>
     <main>
         <div class="container">
-            <h2>Laipni lūdzam</h2>
-            <form action="/login" method="POST">
-                <div class="form-group">
+            <h2>Reģistrēties</h2>
+            <form action="/register" method="POST">
+                <div>
                     <label for="username">Lietotajvārds: </label>
                     <input type="text" id="username" name="username" required>
                 </div>
-                <div class="form-group">
+                <div>
                     <label for="password">Parole: </label>
                     <input type="password" id="password" name="password" required>
                 </div>
-                <button type="submit">Pieteikties</button>
+
+                <button type="submit">Reģistrēties</button>
             </form>
-            <p>Nav konta? <a href="/register">Reģistrējieties tūlīt!</a></p>
+            <p>Ir konts? <a href="/pieteikties">Pieteikties!</a></p>
         </div>
     </main>
     <footer>

@@ -1,0 +1,42 @@
+
+body{  
+    font-family:Garamond, Arial, Helvetica, Sans-serif,serif;
+    font-size:15px;
+    color:#ffffff;
+    background-image: url("aziz-acharki-tLsOA0Vlvwk-unsplash.jpg");
+    background-color: #26382c;
+    margin: auto; 
+    display: flex;  
+    justify-content: center;
+}
+ 
+h1 {
+    font-family:"Lucida Handwriting", Arial, Helvetica, Sans-serif,serif;
+    font-size:50px;
+    justify-content: center;
+    margin: auto; 
+    display: flex; 
+}
+ 
+h2 {
+    font-size:22px;
+    justify-content: center;
+    margin: auto; 
+    display: flex; 
+}
+
+a {
+  color: #ecbcbc;
+  font-weight: bold;
+  text-decoration: none;
+  justify-content: center;
+  margin: auto; 
+  display: flex; 
+}
+footer{
+    text-align: end;
+    justify-content: center;
+    margin: auto; 
+    display: flex; 
+}
+ 
