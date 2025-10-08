@@ -34,7 +34,7 @@ a {
   display: flex; 
 }
 footer{
-    text-align: end;
+    vertical-align: bottom;
     justify-content: center;
     margin: auto; 
     display: flex; 
