@@ -10,17 +10,21 @@
     <header>
         <h1><a href="/">Annas Salons</a></h1>
         <nav>
-            <a href="/pakalpojumi">Pakalpojumi</a>                   
-            <a href="/klienti">Klienti</a>                   
-            <a href="/tiksanas">Tikšanās</a>                   
-            <a href="/registreties">Reģistrēties</a>
-            <a href="/pieteikties">Pieteikties</a>
+            <a href="/pakalpojumi">Pakalpojumi</a>
+            {% if not logged_in %}
+                <a href="/registreties">Reģistrēties</a>
+                <a href="/pieteikties">Pieteikties</a>
+            {% else %}
+                <a href="/klienti">Klienti</a>
+                <a href="/tiksanas">Tikšanās</a>
+                <a href="{{ url_for('logout') }}">Izrakstīties</a>
+            {% endif %}
         </nav>
     </header>
         </nav>
     </header>
     <main>
-        <section>
+        <div>
             <h2>Mūsu pakalpojumi</h2>
             <ul>
                 <li>Matu griezums</li>
@@ -30,7 +34,7 @@
                 <li>Masāžas terapija</li>
                 <li>Grima uzklāšana</li>
             </ul>
-        </section>
+        </div>
     </main>
     <footer>
         <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>

@@ -28,18 +28,6 @@ def init_db():
 
 init_db()
 
-@app.route('/')
-def home():
-    return render_template('home.html')
-
-@app.route('/pakalpojumi')
-def pakalpojumi():
-    return render_template('pakalpojumi.html')
-
-@app.route('/klienti')
-def klienti():
-    return render_template('klienti.html')
-
 class Skaistumkopsana:
     def __init__(
         self,
@@ -66,6 +54,18 @@ class Skaistumkopsana:
         self.pakalpojuma_datums = pakalpojuma_datums
 
 
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+@app.route('/pakalpojumi')
+def pakalpojumi():
+    return render_template('pakalpojumi.html')
+
+@app.route('/klienti')
+def klienti():
+    return render_template('klienti.html')
+
 @app.route('/tiksanas')
 def tiksanas():
     return render_template('tiksanas.html')
@@ -78,18 +78,23 @@ def registreties():
         if not username or not password:
             flash('Lūdzu, ievadiet lietotājvārdu un paroli!', 'danger')
             return render_template('registreties.html')
-        conn = get_db()
-        c = conn.cursor()
         try:
+            conn = get_db()
+            c = conn.cursor()
             c.execute('INSERT INTO klienti (username, password) VALUES (?, ?)', (username, password))
             conn.commit()
             flash('Reģistrācija veiksmīga! Tagad vari pieteikties.', 'success')
-            return redirect('/pieteikties')
+            return redirect(url_for('pieteikties'))
         except sqlite3.IntegrityError:
             flash('Lietotājvārds jau eksistē!', 'danger')
+        except Exception as e:
+            flash(f'Kļūda: {e}', 'danger')
         finally:
-            conn.close()
-    return render_template('/registreties')
+            try:
+                conn.close()
+            except:
+                pass
+    return render_template('registreties.html')
 
 @app.route('/pieteikties', methods=['GET', 'POST'])
 def pieteikties():
@@ -98,25 +103,32 @@ def pieteikties():
         password = request.form['password']
         if not username or not password:
             flash('Lūdzu, ievadiet lietotājvārdu un paroli!', 'danger')
-            return render_template('/pieteikties')
-        conn = get_db()
-        c = conn.cursor()
-        c.execute('SELECT * FROM klienti WHERE username=? AND password=?', (username, password))
-        user = c.fetchone()
-        conn.close()
-        if user:
-            session['username'] = username
-            flash('Pieteikšanās veiksmīga!', 'success')
-            return redirect('/')
-        else:
-            flash('Nepareizs lietotājvārds vai parole!', 'danger')
-    return render_template('/pieteikties')
+            return render_template('pieteikties.html')
+        try:
+            conn = get_db()
+            c = conn.cursor()
+            c.execute('SELECT * FROM klienti WHERE username=? AND password=?', (username, password))
+            user = c.fetchone()
+            conn.close()
+            if user:
+                session['username'] = username
+                flash('Pieteikšanās veiksmīga!', 'success')
+                return redirect(url_for('home'))
+            else:
+                flash('Nepareizs lietotājvārds vai parole!', 'danger')
+        except Exception as e:
+            flash(f'Kļūda: {e}', 'danger')
+    return render_template('pieteikties.html')
 
-@app.route('/izrakstisanas')
-def izrakstisanas():
+@app.route('/logout')
+def logout():
     session.pop('username', None)
     flash('Izrakstīšanās veiksmīga!', 'success')
-    return redirect('/')
+    return redirect(url_for('home'))
+
+@app.context_processor
+def inject_user():
+    return dict(logged_in=('username' in session), username=session.get('username'))
 
 if __name__ == '__main__':
     app.run(debug=True)

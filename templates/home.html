@@ -6,22 +6,38 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Annas Salons</title>
 </head>
-<body>
+<body background="flowers.jpg">
     <header>
         <h1><a href="/">Annas Salons</a></h1>
         <nav>
-            <a href="/pakalpojumi">Pakalpojumi</a>                   
-            <a href="/klienti">Klienti</a>                   
-            <a href="/tiksanas">Tikšanās</a>                   
-            <a href="/registreties">Reģistrēties</a>
-            <a href="/pieteikties">Pieteikties</a>
+            <a href="/pakalpojumi">Pakalpojumi</a>
+            {% if not logged_in %}
+                <a href="/registreties">Reģistrēties</a>
+                <a href="/pieteikties">Pieteikties</a>
+            {% else %}
+                <a href="/klienti">Klienti</a>
+                <a href="/tiksanas">Tikšanās</a>
+                <a href="{{ url_for('logout') }}">Izrakstīties</a>
+            {% endif %}
         </nav>
+    {% if logged_in %}
+    <span>Sveiks, {{ username }}!</span> 
+    {% endif %}
     </header>
     <main>
-        <section>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        <div>
             <h2>Šis ir tavs izskats,</h2>
             <h3>esi pats labākais</h3>
-        </section>
+        </div>
     </main>
     <footer>
         <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>

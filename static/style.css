@@ -3,10 +3,9 @@ body{
     font-family:Garamond, Arial, Helvetica, Sans-serif,serif;
     font-size:15px;
     color:#ffffff;
-    background-image: url("aziz-acharki-tLsOA0Vlvwk-unsplash.jpg");
+    background-image: url(flowers.jpg);
     background-color: #26382c;
     margin: auto; 
-    display: flex;  
     justify-content: center;
 }
  
@@ -25,18 +24,54 @@ h2 {
     display: flex; 
 }
 
-a {
-  color: #ecbcbc;
-  font-weight: bold;
-  text-decoration: none;
-  justify-content: center;
-  margin: auto; 
-  display: flex; 
+p{
+    text-align:center; 
+    vertical-align: middle;
+    display: table-cell;
 }
+
+a {
+    color: #ecbcbc;
+    font-weight: bold;
+    text-decoration: none;
+    justify-content: center;
+    margin: auto; 
+    display: flex; 
+}
+
+.div-1{
+    border: 2px solid #743030;
+    padding: 10px;
+    margin: 10px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    width: 300px;
+    justify-content: center;
+    margin: auto; 
+    display: flex; 
+}
+.div-2{
+    border: #743030;
+    margin: 10px;
+    background-color: rgb(143, 124, 124);
+    justify-content: center;
+    margin: auto; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+}
+
+div{
+    justify-content: center;
+    margin: auto; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+}
+
 footer{
     vertical-align: bottom;
     justify-content: center;
     margin: auto; 
     display: flex; 
 }
- 

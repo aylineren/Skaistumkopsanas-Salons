@@ -10,29 +10,43 @@
     <header>
         <h1><a href="/">Annas Salons</a></h1>
         <nav>
-            <a href="/pakalpojumi">Pakalpojumi</a>                   
-            <a href="/klienti">Klienti</a>                   
-            <a href="/tiksanas">Tikšanās</a>                   
-            <a href="/registreties">Reģistrēties</a>
-            <a href="/pieteikties">Pieteikties</a>
+            <a href="/pakalpojumi">Pakalpojumi</a>
+            {% if not logged_in %}
+                <a href="/registreties">Reģistrēties</a>
+                <a href="/pieteikties">Pieteikties</a>
+            {% else %}
+                <a href="/klienti">Klienti</a>
+                <a href="/tiksanas">Tikšanās</a>
+                <a href="{{ url_for('logout') }}">Izrakstīties</a>
+            {% endif %}
         </nav>
     </header>
     <main>
-        <div class="container">
-            <h2>Laipni lūdzam</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        
+        <h2>Laipni lūdzam</h2>
+        <div class="div-1">
             <form action="/pieteikties" method="POST">
-                <div class="form-group">
+                <div class="div-2">
                     <label for="username">Lietotajvārds: </label>
                     <input type="text" id="username" name="username" required>
                 </div>
-                <div class="form-group">
+                <div class="div-2">
                     <label for="password">Parole: </label>
                     <input type="password" id="password" name="password" required>
                 </div>
                 <button type="submit">Pieteikties</button>
             </form>
-            <p>Nav konta? <a href="/registreties">Reģistrējieties tūlīt!</a></p>
         </div>
+        <div><p>Nav konta? <a href="/registreties">Reģistrējieties tūlīt!</a></p></div>
     </main>
     <footer>
         <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>
