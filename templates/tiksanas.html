@@ -17,6 +17,7 @@
             {% else %}
                 <a href="/klienti">Klienti</a>
                 <a href="/tiksanas">Tikšanās</a>
+                <a href="/profils">Profils</a>
                 <a href="{{ url_for('logout') }}">Izrakstīties</a>
             {% endif %}
         </nav>
@@ -36,14 +37,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for appt in appointments %}
+                    {% for pak in appointments %}
                     <tr>
-                        <td>{{ appt.kategorija }}</td>
-                        <td>{{ appt.nosaukums }}</td>
-                        <td>{{ appt.cena }} €</td>
-                        <td>{{ appt.datums }}</td>
-                        <td>{{ appt.sakuma_laiks }}</td>
-                        <td>{{ appt.beigu_laiks }}</td>
+                        <td>{{ pak.kategorija }}</td>
+                        <td>{{ pak.nosaukums }}</td>
+                        <td>{{ pak.cena }} €</td>
+                        <td>{{ pak.datums }}</td>
+                        <td>{{ pak.sakuma_laiks }}</td>
+                        <td>{{ pak.beigu_laiks }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

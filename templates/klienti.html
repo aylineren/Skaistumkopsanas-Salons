@@ -17,6 +17,7 @@
             {% else %}
                 <a href="/klienti">Klienti</a>
                 <a href="/tiksanas">Tikšanās</a>
+                <a href="/profils">Profils</a>
                 <a href="{{ url_for('logout') }}">Izrakstīties</a>
             {% endif %}
         </nav>
@@ -27,7 +28,8 @@
             <thead>
                 <tr>
                     <th>Vārds</th>
-                    <th>E-mail</th>
+                    <th>Uzvārds</th>
+                    <th>E-pasts</th>
                     <th>Tālrunis</th>
                 </tr>
             </thead>
@@ -35,8 +37,9 @@
                 {% for klients in klienti %}
                 <tr>
                     <td>{{ klients.vards }}</td>
+                    <td>{{ klients.uzvards }}</td>
                     <td>{{ klients.email }}</td>
-                    <td>{{ klients.talrunis }}</td>
+                    <td>{{ klients.talrunis or klients.tel_numurs }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

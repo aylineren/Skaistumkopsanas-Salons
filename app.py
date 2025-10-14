@@ -13,8 +13,10 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-def init_db():
-    if not os.path.exists(DATABASE):
+def init_db(force=False):
+    if force or not os.path.exists(DATABASE):
+        if os.path.exists(DATABASE) and force:
+            os.remove(DATABASE)
         conn = get_db()
         c = conn.cursor()
         c.execute('''
@@ -25,7 +27,9 @@ def init_db():
                 vards TEXT,
                 uzvards TEXT,
                 pk TEXT,
-                tel_numurs TEXT
+                tel_numurs TEXT,
+                email TEXT,
+                talrunis TEXT
             )
         ''')
         c.execute('''
@@ -51,7 +55,10 @@ def init_db():
         conn.commit()
         conn.close()
 
-init_db()
+try:
+    init_db()
+except Exception as e:
+    print("DB init error:", e)
 
 class Skaistumkopsana:
     def __init__(self, pakalpojuma_kategorija=None, pakalpojuma_nosaukums=None, pakalpojuma_atlaide=0, pakalpojuma_cena=0, laiks_pieejams=True, klients_vards=None, klients_uzvards=None, klients_pk=None, klients_tel_numurs=None, pakalpojuma_datums=None, pakalpojuma_sakuma_laiks=None, pakalpojuma_beigu_laiks=None):
@@ -136,13 +143,22 @@ def pakalpojumi():
             conn.commit()
             flash('Pakalpojums pievienots!', 'success')
     c.execute('SELECT * FROM pakalpojumi')
-    packs = c.fetchall()
+    pakalpojumi = c.fetchall()
     conn.close()
-    return render_template('pakalpojumi.html', packs=packs, is_admin=(session.get('username') == ADMIN_USERNAME))
+    return render_template('pakalpojumi.html', pakalpojumi=pakalpojumi, is_admin=(session.get('username') == ADMIN_USERNAME))
 
 @app.route('/klienti')
 def klienti():
-    return render_template('klienti.html')
+    conn = get_db()
+    c = conn.cursor()
+    try:
+        c.execute('SELECT vards, uzvards, pk, tel_numurs, email, talrunis, username FROM klienti')
+        klienti = c.fetchall()
+    except Exception as e:
+        klienti = []
+        flash('Kļūda datubāzē: ' + str(e), 'danger')
+    conn.close()
+    return render_template('klienti.html', klienti=klienti)
 
 @app.route('/tiksanas')
 def tiksanas():
@@ -152,6 +168,9 @@ def tiksanas():
     c = conn.cursor()
     c.execute('SELECT * FROM klienti WHERE username=?', (session['username'],))
     user = c.fetchone()
+    if not user:
+        flash('Lietotājs nav atrasts!', 'danger')
+        return redirect(url_for('home'))
     c.execute('''
         SELECT a.*, p.kategorija, p.nosaukums, p.cena
         FROM appointments a
@@ -162,6 +181,37 @@ def tiksanas():
     appointments = c.fetchall()
     conn.close()
     return render_template('tiksanas.html', appointments=appointments)
+
+@app.route('/book/<int:pak_id>', methods=['GET', 'POST'])
+def book_appointment(pak_id):
+    if 'username' not in session:
+        return redirect(url_for('pieteikties'))
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('SELECT * FROM klienti WHERE username=?', (session['username'],))
+    user = c.fetchone()
+    if not user:
+        flash('Lietotājs nav atrasts!', 'danger')
+        return redirect(url_for('home'))
+    if not is_profile_complete(user):
+        flash('Lūdzu, aizpildiet savu profilu pirms rezervācijas!', 'danger')
+        return redirect(url_for('profils'))
+    c.execute('SELECT * FROM pakalpojumi WHERE id=?', (pak_id,))
+    pak = c.fetchone()
+    if not pak:
+        flash('Pakalpojums nav atrasts!', 'danger')
+        return redirect(url_for('pakalpojumi'))
+    if request.method == 'POST':
+        datums = request.form['datums']
+        sakuma_laiks = request.form['sakuma_laiks']
+        beigu_laiks = request.form['beigu_laiks']
+        c.execute('INSERT INTO appointments (klienta_id, pakalpojuma_id, datums, sakuma_laiks, beigu_laiks) VALUES (?, ?, ?, ?, ?)',
+                  (user['id'], pak_id, datums, sakuma_laiks, beigu_laiks))
+        conn.commit()
+        flash('Tikšanās pievienota!', 'success')
+        return redirect(url_for('tiksanas'))
+    conn.close()
+    return render_template('book.html', pak=pak)
 
 @app.route('/registreties', methods=['GET', 'POST'])
 def registreties():
@@ -231,6 +281,9 @@ def profils():
     c = conn.cursor()
     c.execute('SELECT * FROM klienti WHERE username=?', (session['username'],))
     user = c.fetchone()
+    if not user:
+        flash('Lietotājs nav atrasts!', 'danger')
+        return redirect(url_for('home'))
     if request.method == 'POST':
         vards = request.form['vards']
         uzvards = request.form['uzvards']
@@ -244,37 +297,15 @@ def profils():
     conn.close()
     return render_template('profils.html', user=user)
 
-@app.route('/book/<int:pak_id>', methods=['GET', 'POST'])
-def book(pak_id):
-    if 'username' not in session:
-        return redirect(url_for('pieteikties'))
-    conn = get_db()
-    c = conn.cursor()
-    c.execute('SELECT * FROM klienti WHERE username=?', (session['username'],))
-    user = c.fetchone()
-    if not is_profile_complete(user):
-        flash('Lūdzu, aizpildiet savu profilu pirms rezervācijas!', 'danger')
-        return redirect(url_for('profils'))
-    c.execute('SELECT * FROM pakalpojumi WHERE id=?', (pak_id,))
-    pak = c.fetchone()
-    if not pak:
-        flash('Pakalpojums nav atrasts!', 'danger')
-        return redirect(url_for('pakalpojumi'))
-    if request.method == 'POST':
-        datums = request.form['datums']
-        sakuma_laiks = request.form['sakuma_laiks']
-        beigu_laiks = request.form['beigu_laiks']
-        c.execute('INSERT INTO appointments (klienta_id, pakalpojuma_id, datums, sakuma_laiks, beigu_laiks) VALUES (?, ?, ?, ?, ?)',
-                  (user['id'], pak_id, datums, sakuma_laiks, beigu_laiks))
-        conn.commit()
-        flash('Tikšanās pievienota!', 'success')
-        return redirect(url_for('tiksanas'))
-    conn.close()
-    return render_template('book.html', pak=pak)
-
 @app.context_processor
 def inject_user():
     return dict(logged_in=('username' in session), username=session.get('username'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == 'initdb':
+        print("Initializing database...")
+        init_db(force=True)
+        print("Database initialized.")
+    else:
+        app.run(debug=True)

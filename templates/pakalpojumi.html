@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pakalpojumi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
+</head>
+<body>
+    <header>
+        <h1><a href="/">Annas Salons</a></h1>
+        <nav>
+            <a href="/pakalpojumi">Pakalpojumi</a>
+            {% if not logged_in %}
+                <a href="/registreties">Reģistrēties</a>
+                <a href="/pieteikties">Pieteikties</a>
+            {% else %}
+                <a href="/klienti">Klienti</a>
+                <a href="/tiksanas">Tikšanās</a>
+                <a href="/profils">Profils</a>
+                <a href="{{ url_for('logout') }}">Izrakstīties</a>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        <div>
+            <h2>Mūsu pakalpojumi</h2>
+            <ul>
+                {% for pack in pakalpojumi %}
+                <li>
+                    <b>{{ pack.kategorija }}</b> - {{ pack.nosaukums }}<br>
+                    Cena: {{ pack.cena }} €
+                    <br>
+                    <a href="{{ url_for('book_appointment', pak_id=pack.id) }}">Pieteikt tikšanos</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% if is_admin %}
+        <div class="div-1">
+            <h3>Pievienot jaunu pakalpojumu</h3>
+            <form method="POST">
+                <div class="div-2">
+                    <label>Kategorija:</label>
+                    <input type="text" name="kategorija" required>
+                </div>
+                <div class="div-2">
+                    <label>Nosaukums:</label>
+                    <input type="text" name="nosaukums" required>
+                </div>
+                <div class="div-2">
+                    <label>Cena (€):</label>
+                    <input type="number" name="cena" step="0.01" required>
+                </div>
+                <button type="submit">Pievienot</button>
+            </form>
+        </div>
+        {% endif %}
+    </main>
+    <footer>
+        <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>
+    </footer>
+</body>
+</html>
