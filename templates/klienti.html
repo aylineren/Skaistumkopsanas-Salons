@@ -11,39 +11,45 @@
         <h1><a href="/">Annas Salons</a></h1>
         <nav>
             <a href="/pakalpojumi">Pakalpojumi</a>
-            {% if not logged_in %}
-                <a href="/registreties">Reģistrēties</a>
-                <a href="/pieteikties">Pieteikties</a>
-            {% else %}
                 <a href="/klienti">Klienti</a>
                 <a href="/tiksanas">Tikšanās</a>
                 <a href="/profils">Profils</a>
                 <a href="{{ url_for('logout') }}">Izrakstīties</a>
-            {% endif %}
         </nav>
     </header>
     <main>
-        <h2>Klienti</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Vārds</th>
-                    <th>Uzvārds</th>
-                    <th>E-pasts</th>
-                    <th>Tālrunis</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for klients in klienti %}
-                <tr>
-                    <td>{{ klients.vards }}</td>
-                    <td>{{ klients.uzvards }}</td>
-                    <td>{{ klients.email }}</td>
-                    <td>{{ klients.talrunis or klients.tel_numurs }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        <div class="div-2"><h2>Klienti</h2></div>
+        <div class="div-4">
+            <table class="klientu-tabula" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>Vārds</th>
+                        <th>Uzvārds</th>
+                        <th>E-pasts</th>
+                        <th>Tālrunis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for klients in klienti %}
+                    <tr>
+                        <td>{{ klients.vards }}</td>
+                        <td>{{ klients.uzvards }}</td>
+                        <td>{{ klients.email }}</td>
+                        <td>{{ klients.tel_numurs }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% if pakalpojums %}
         <div class="div-1">
             <h3>Klienta informācija</h3>

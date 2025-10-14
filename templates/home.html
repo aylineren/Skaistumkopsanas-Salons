@@ -16,14 +16,15 @@
                 <a href="/registreties">Reģistrēties</a>
                 <a href="/pieteikties">Pieteikties</a>
             {% else %}
-                <a href="/klienti">Klienti</a>
+                {% if is_admin %}
+                    <a href="/klienti">Klienti</a>
+                {% endif %}
                 <a href="/tiksanas">Tikšanās</a>
                 <a href="/profils">Profils</a>
                 <a href="{{ url_for('logout') }}">Izrakstīties</a>
             {% endif %}
         </nav>
     {% if logged_in %}
-    <span>Sveiks, {{ username }}!</span> 
     {% endif %}
     </header>
     <main>
@@ -36,10 +37,11 @@
             </ul>
           {% endif %}
         {% endwith %}
-        <div>
-            <h2>Šis ir tavs izskats,</h2>
-            <h3>esi pats labākais</h3>
-        </div>
+    <section class="hero">
+    <h2>Šis ir tavs izskats,</h2>
+    <p>esi pats labākais</p>
+    <a href="/pakalpojumi"><button class="btn-drk"> Rezervēt tagad</button></a>
+    </section>
         {% if pakalpojums %}
         <div class="div-1">
             <h3>Pakalpojuma informācija</h3>

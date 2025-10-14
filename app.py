@@ -28,8 +28,7 @@ def init_db(force=False):
                 uzvards TEXT,
                 pk TEXT,
                 tel_numurs TEXT,
-                email TEXT,
-                talrunis TEXT
+                email TEXT
             )
         ''')
         c.execute('''
@@ -37,7 +36,8 @@ def init_db(force=False):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 kategorija TEXT NOT NULL,
                 nosaukums TEXT NOT NULL,
-                cena REAL NOT NULL
+                cena REAL NOT NULL,
+                atlaide REAL DEFAULT 0
             )
         ''')
         c.execute('''
@@ -80,7 +80,7 @@ class Skaistumkopsana:
         return cls(laiks_pieejams=True)
 
     @classmethod
-    def ar_parametriem(cls, pak_kategorija, pak_nosaukums, atlaide, cena, sakuma_laiks, beigu_laiks):
+    def ar_parametriem(cls, pak_kategorija, pak_nosaukums, atlaide, cena, sakuma_laiks=None, beigu_laiks=None):
         return cls(
             pakalpojuma_kategorija=pak_kategorija,
             pakalpojuma_nosaukums=pak_nosaukums,
@@ -128,7 +128,7 @@ def is_profile_complete(user_row):
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    return render_template('home.html', is_admin=(session.get('username') == ADMIN_USERNAME))
 
 @app.route('/pakalpojumi', methods=['GET', 'POST'])
 def pakalpojumi():
@@ -138,8 +138,9 @@ def pakalpojumi():
         kategorija = request.form['kategorija']
         nosaukums = request.form['nosaukums']
         cena = request.form['cena']
+        atlaide = request.form.get('atlaide', 0)
         if kategorija and nosaukums and cena:
-            c.execute('INSERT INTO pakalpojumi (kategorija, nosaukums, cena) VALUES (?, ?, ?)', (kategorija, nosaukums, cena))
+            c.execute('INSERT INTO pakalpojumi (kategorija, nosaukums, cena, atlaide) VALUES (?, ?, ?, ?)', (kategorija, nosaukums, cena, atlaide))
             conn.commit()
             flash('Pakalpojums pievienots!', 'success')
     c.execute('SELECT * FROM pakalpojumi')
@@ -152,13 +153,13 @@ def klienti():
     conn = get_db()
     c = conn.cursor()
     try:
-        c.execute('SELECT vards, uzvards, pk, tel_numurs, email, talrunis, username FROM klienti')
+        c.execute('SELECT vards, uzvards, pk, tel_numurs, email, username FROM klienti')
         klienti = c.fetchall()
     except Exception as e:
         klienti = []
         flash('Kļūda datubāzē: ' + str(e), 'danger')
     conn.close()
-    return render_template('klienti.html', klienti=klienti)
+    return render_template('klienti.html', klienti=klienti, is_admin=(session.get('username') == ADMIN_USERNAME))
 
 @app.route('/tiksanas')
 def tiksanas():
@@ -166,24 +167,49 @@ def tiksanas():
         return redirect(url_for('pieteikties'))
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM klienti WHERE username=?', (session['username'],))
-    user = c.fetchone()
-    if not user:
-        flash('Lietotājs nav atrasts!', 'danger')
-        return redirect(url_for('home'))
-    c.execute('''
-        SELECT a.*, p.kategorija, p.nosaukums, p.cena
-        FROM appointments a
-        JOIN pakalpojumi p ON a.pakalpojuma_id = p.id
-        WHERE a.klienta_id=?
-        ORDER BY a.datums DESC, a.sakuma_laiks DESC
-    ''', (user['id'],))
-    appointments = c.fetchall()
+    is_admin = (session.get('username') == ADMIN_USERNAME)
+    if is_admin:
+        c.execute('''
+            SELECT a.*, p.kategorija, p.nosaukums, p.cena, p.atlaide,
+                   k.vards AS klienta_vards, k.uzvards AS klienta_uzvards, k.username AS klienta_username
+            FROM appointments a
+            JOIN pakalpojumi p ON a.pakalpojuma_id = p.id
+            JOIN klienti k ON a.klienta_id = k.id
+            ORDER BY a.datums DESC, a.sakuma_laiks DESC
+        ''')
+        appointments = c.fetchall()
+    else:
+        c.execute('SELECT * FROM klienti WHERE username=?', (session['username'],))
+        user = c.fetchone()
+        if not user:
+            flash('Lietotājs nav atrasts!', 'danger')
+            return redirect(url_for('home'))
+        c.execute('''
+            SELECT a.*, p.kategorija, p.nosaukums, p.cena, p.atlaide
+            FROM appointments a
+            JOIN pakalpojumi p ON a.pakalpojuma_id = p.id
+            WHERE a.klienta_id=?
+            ORDER BY a.datums DESC, a.sakuma_laiks DESC
+        ''', (user['id'],))
+        appointments = c.fetchall()
+    # Calculate discounted price for each appointment
+    appointments_list = []
+    for pak in appointments:
+        cena = pak['cena']
+        atlaide = pak['atlaide'] if 'atlaide' in pak.keys() and pak['atlaide'] is not None else 0
+        try:
+            atlaide_val = float(str(atlaide).replace('%',''))
+        except:
+            atlaide_val = 0
+        cena_kopa = round(float(cena) * (1 - atlaide_val/100), 2)
+        pak_dict = dict(pak)
+        pak_dict['cena_kopa'] = cena_kopa
+        appointments_list.append(pak_dict)
     conn.close()
-    return render_template('tiksanas.html', appointments=appointments)
+    return render_template('tiksanas.html', appointments=appointments_list, is_admin=is_admin)
 
-@app.route('/book/<int:pak_id>', methods=['GET', 'POST'])
-def book_appointment(pak_id):
+@app.route('/rezervet/<int:pak_id>', methods=['GET', 'POST'])
+def rezervet_appointment(pak_id):
     if 'username' not in session:
         return redirect(url_for('pieteikties'))
     conn = get_db()
@@ -201,6 +227,14 @@ def book_appointment(pak_id):
     if not pak:
         flash('Pakalpojums nav atrasts!', 'danger')
         return redirect(url_for('pakalpojumi'))
+    # Calculate discounted price
+    cena = pak['cena']
+    atlaide = pak['atlaide'] if 'atlaide' in pak.keys() and pak['atlaide'] is not None else 0
+    try:
+        atlaide_val = float(str(atlaide).replace('%',''))
+    except:
+        atlaide_val = 0
+    cena_kopa = round(float(cena) * (1 - atlaide_val/100), 2)
     if request.method == 'POST':
         datums = request.form['datums']
         sakuma_laiks = request.form['sakuma_laiks']
@@ -211,7 +245,7 @@ def book_appointment(pak_id):
         flash('Tikšanās pievienota!', 'success')
         return redirect(url_for('tiksanas'))
     conn.close()
-    return render_template('book.html', pak=pak)
+    return render_template('rezervet.html', pak=pak, cena_kopa=cena_kopa, is_admin=(session.get('username') == ADMIN_USERNAME))
 
 @app.route('/registreties', methods=['GET', 'POST'])
 def registreties():
@@ -222,13 +256,14 @@ def registreties():
         uzvards = request.form.get('uzvards')
         pk = request.form.get('pk')
         tel_numurs = request.form.get('tel_numurs')
-        if not username or not password:
-            flash('Lūdzu, ievadiet lietotājvārdu un paroli!', 'danger')
+        email = request.form.get('email')
+        if not username or not password or not email:
+            flash('Lūdzu, ievadiet lietotājvārdu, paroli un e-pastu!', 'danger')
             return render_template('registreties.html')
         try:
             conn = get_db()
             c = conn.cursor()
-            c.execute('INSERT INTO klienti (username, password, vards, uzvards, pk, tel_numurs) VALUES (?, ?, ?, ?, ?, ?)', (username, password, vards, uzvards, pk, tel_numurs))
+            c.execute('INSERT INTO klienti (username, password, vards, uzvards, pk, tel_numurs, email) VALUES (?, ?, ?, ?, ?, ?, ?)', (username, password, vards, uzvards, pk, tel_numurs, email))
             conn.commit()
             flash('Reģistrācija veiksmīga! Tagad vari pieteikties.', 'success')
             return redirect(url_for('pieteikties'))
@@ -289,13 +324,14 @@ def profils():
         uzvards = request.form['uzvards']
         pk = request.form['pk']
         tel_numurs = request.form['tel_numurs']
-        c.execute('UPDATE klienti SET vards=?, uzvards=?, pk=?, tel_numurs=? WHERE username=?',
-                  (vards, uzvards, pk, tel_numurs, session['username']))
+        email = request.form['email']
+        c.execute('UPDATE klienti SET vards=?, uzvards=?, pk=?, tel_numurs=?, email=? WHERE username=?',
+                  (vards, uzvards, pk, tel_numurs, email, session['username']))
         conn.commit()
         flash('Profils atjaunots!', 'success')
         return redirect(url_for('pakalpojumi'))
     conn.close()
-    return render_template('profils.html', user=user)
+    return render_template('profils.html', user=user, is_admin=(session.get('username') == ADMIN_USERNAME))
 
 @app.context_processor
 def inject_user():

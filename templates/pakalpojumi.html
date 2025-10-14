@@ -14,7 +14,9 @@
                 <a href="/registreties">Reģistrēties</a>
                 <a href="/pieteikties">Pieteikties</a>
             {% else %}
-                <a href="/klienti">Klienti</a>
+                {% if is_admin %}
+                    <a href="/klienti">Klienti</a>
+                {% endif %}
                 <a href="/tiksanas">Tikšanās</a>
                 <a href="/profils">Profils</a>
                 <a href="{{ url_for('logout') }}">Izrakstīties</a>
@@ -22,21 +24,30 @@
         </nav>
     </header>
     <main>
-        <div>
-            <h2>Mūsu pakalpojumi</h2>
-            <ul>
-                {% for pack in pakalpojumi %}
-                <li>
-                    <b>{{ pack.kategorija }}</b> - {{ pack.nosaukums }}<br>
-                    Cena: {{ pack.cena }} €
-                    <br>
-                    <a href="{{ url_for('book_appointment', pak_id=pack.id) }}">Pieteikt tikšanos</a>
-                </li>
-                {% endfor %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
             </ul>
+          {% endif %}
+        {% endwith %}
+        <div class="div-2"><h2>Mūsu pakalpojumi</h2></div>
+        <div class="pakalpojumi-grid">
+            {% for pack in pakalpojumi %}
+            <div class="div-1 pakalpojums-item">
+                <b>{{ pack.kategorija }}</b> - {{ pack.nosaukums }}<br>
+                Cena: {{ pack.cena }} €<br>
+                {% if pack.atlaide is defined %}
+                    Atlaide: {{ pack.atlaide }}%<br>
+                {% endif %}
+                <a href="{{ url_for('rezervet_appointment', pak_id=pack.id) }}"><button class="btn-li">Pieteikt tikšanos</button></a>
+            </div>
+            {% endfor %}
         </div>
         {% if is_admin %}
-        <div class="div-1">
+        <div class="div-3">
             <h3>Pievienot jaunu pakalpojumu</h3>
             <form method="POST">
                 <div class="div-2">
@@ -51,7 +62,11 @@
                     <label>Cena (€):</label>
                     <input type="number" name="cena" step="0.01" required>
                 </div>
-                <button type="submit">Pievienot</button>
+                <div class="div-2">
+                    <label>Atlaide (%):</label>
+                    <input type="number" name="atlaide" step="0.01" min="0" max="100">
+                </div>
+                <button type="submit" class="btn-li">Pievienot</button>
             </form>
         </div>
         {% endif %}

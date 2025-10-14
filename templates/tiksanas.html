@@ -15,7 +15,9 @@
                 <a href="/registreties">Reģistrēties</a>
                 <a href="/pieteikties">Pieteikties</a>
             {% else %}
-                <a href="/klienti">Klienti</a>
+                {% if is_admin %}
+                    <a href="/klienti">Klienti</a>
+                {% endif %}
                 <a href="/tiksanas">Tikšanās</a>
                 <a href="/profils">Profils</a>
                 <a href="{{ url_for('logout') }}">Izrakstīties</a>
@@ -23,14 +25,34 @@
         </nav>
     </header>
     <main>
-        <h2>Manas tikšanās</h2>
+        {% if is_admin %}
+        <div class="div-2"><h2>Visas klientu tikšanās</h2></div>
+        {% else %}
+        <div class="div-2"><h2>Manas tikšanās</h2></div>
+        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
         {% if appointments and appointments|length > 0 %}
-            <table>
+        <div class="div-4">
+            <table class="tks-tabula" style="width:100%; border-collapse:collapse;">
                 <thead>
                     <tr>
+                        {% if is_admin %}
+                            <th>Klienta vārds</th>
+                            <th>Klienta uzvārds</th>
+                            <th>Lietotājvārds</th>
+                        {% endif %}
                         <th>Kategorija</th>
                         <th>Nosaukums</th>
                         <th>Cena</th>
+                        <th>Atlaide</th>
                         <th>Datums</th>
                         <th>Sākuma laiks</th>
                         <th>Beigu laiks</th>
@@ -39,9 +61,21 @@
                 <tbody>
                     {% for pak in appointments %}
                     <tr>
+                        {% if is_admin %}
+                            <td>{{ pak.klienta_vards }}</td>
+                            <td>{{ pak.klienta_uzvards }}</td>
+                            <td>{{ pak.klienta_username }}</td>
+                        {% endif %}
                         <td>{{ pak.kategorija }}</td>
                         <td>{{ pak.nosaukums }}</td>
-                        <td>{{ pak.cena }} €</td>
+                        <td>{{ pak.cena_kopa }} €</td>
+                        <td>
+                            {% if pak.atlaide is defined %}
+                                {{ pak.atlaide }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </td>
                         <td>{{ pak.datums }}</td>
                         <td>{{ pak.sakuma_laiks }}</td>
                         <td>{{ pak.beigu_laiks }}</td>
@@ -49,10 +83,11 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
         {% else %}
             <div class="div-1">
                 <p>Jums nav nevienas tikšanās.</p>
-                <p><a href="{{ url_for('pakalpojumi') }}">Pievienot tikšanos</a></p>
+                <p><a href="{{ url_for('pakalpojumi') }}"><button class="btn-li">Pievienot tikšanos</button></a></p>
             </div>
         {% endif %}
     </main>

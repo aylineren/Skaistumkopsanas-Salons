@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rezervēt tikšanos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1><a href="/">Annas Salons</a></h1>
+        <nav>
+            <a href="/pakalpojumi">Pakalpojumi</a>
+            {% if not logged_in %}
+                <a href="/registreties">Reģistrēties</a>
+                <a href="/pieteikties">Pieteikties</a>
+            {% else %}
+                {% if is_admin %}
+                    <a href="/klienti">Klienti</a>
+                {% endif %}
+                <a href="/tiksanas">Tikšanās</a>
+                <a href="/profils">Profils</a>
+                <a href="{{ url_for('logout') }}">Izrakstīties</a>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        <div class="div-2"><h2>Rezervēt tikšanos</h2></div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        <div class="div-1">
+            <h3>Pakalpojuma informācija</h3>
+            <p><strong>Kategorija:</strong> {{ pak.kategorija }}</p>
+            <p><strong>Nosaukums:</strong> {{ pak.nosaukums }}</p>
+            <p><strong>Cena ar atlaidi:</strong> {{ cena_kopa }} €</p>
+        </div>
+        <div class="div-1">
+            <form method="post">
+                <div class="div-2">
+                    <label for="datums">Datums:</label>
+                    <input type="date" id="datums" name="datums" required>
+                </div>
+                <div class="div-2">
+                    <label for="sakuma_laiks">Sākuma laiks:</label>
+                    <input type="time" id="sakuma_laiks" name="sakuma_laiks" required>
+                </div>
+                <div class="div-2">
+                    <label for="beigu_laiks">Beigu laiks:</label>
+                    <input type="time" id="beigu_laiks" name="beigu_laiks" required>
+                </div>
+                <button type="submit" class="btn-drk">Rezervēt</button>
+            </form>
+        </div>
+        <div style="text-align:center;">
+            <a href="{{ url_for('pakalpojumi') }}"><button class="btn-li">Atpakaļ uz pakalpojumiem</button></a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>
+    </footer>
+</body>
+</html>

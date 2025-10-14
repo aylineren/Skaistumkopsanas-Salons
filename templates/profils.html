@@ -8,9 +8,23 @@
 <body>
     <header>
         <h1><a href="/">Annas Salons</a></h1>
+        <nav>
+            <a href="/pakalpojumi">Pakalpojumi</a>
+            {% if not logged_in %}
+                <a href="/registreties">Reģistrēties</a>
+                <a href="/pieteikties">Pieteikties</a>
+            {% else %}
+                {% if is_admin %}
+                    <a href="/klienti">Klienti</a>
+                {% endif %}
+                <a href="/tiksanas">Tikšanās</a>
+                <a href="/profils">Profils</a>
+                <a href="{{ url_for('logout') }}">Izrakstīties</a>
+            {% endif %}
+        </nav>
     </header>
     <main>
-        <h2>Profila rediģēšana</h2>
+        <div class="div-2"><h2>Profila rediģēšana</h2></div>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             <ul class="flashes">
@@ -20,25 +34,31 @@
             </ul>
           {% endif %}
         {% endwith %}
-        <form method="POST">
-            <div class="div-2">
-                <label for="vards">Klienta vārds:</label>
-                <input type="text" id="vards" name="vards" value="{{ user.vards or '' }}" required>
-            </div>
-            <div class="div-2">
-                <label for="uzvards">Klienta uzvārds:</label>
-                <input type="text" id="uzvards" name="uzvards" value="{{ user.uzvards or '' }}" required>
-            </div>
-            <div class="div-2">
-                <label for="pk">Klienta personas kods:</label>
-                <input type="text" id="pk" name="pk" value="{{ user.pk or '' }}" required>
-            </div>
-            <div class="div-2">
-                <label for="tel_numurs">Klienta telefona numurs:</label>
-                <input type="text" id="tel_numurs" name="tel_numurs" value="{{ user.tel_numurs or '' }}" required>
-            </div>
-            <button type="submit">Saglabāt</button>
-        </form>
+        <div class="div-1">
+            <form method="POST">
+                <div class="div-2">
+                    <label for="vards">Vārds</label>
+                    <input type="text" id="vards" name="vards" value="{{ user.vards or '' }}" required>
+                </div>
+                <div class="div-2">
+                    <label for="uzvards">Uzvārds</label>
+                    <input type="text" id="uzvards" name="uzvards" value="{{ user.uzvards or '' }}" required>
+                </div>
+                <div class="div-2">
+                    <label for="pk">Personas kods</label>
+                    <input type="text" id="pk" name="pk" value="{{ user.pk or '' }}" required>
+                </div>
+                <div class="div-2">
+                    <label for="tel_numurs">Tel. numurs</label>
+                    <input type="text" id="tel_numurs" name="tel_numurs" value="{{ user.tel_numurs or '' }}" required>
+                </div>
+                <div class="div-2">
+                    <label for="email">E-pasts</label>
+                    <input type="email" id="email" name="email" value="{{ user.email or '' }}" required>
+                </div>
+                <button type="submit" class="btn-drk">Saglabāt</button>
+            </form>
+        </div>
     </main>
     <footer>
         <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>
