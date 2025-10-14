@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
     <title>Klienti</title>
 </head>
 <body>
@@ -41,6 +41,12 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% if pakalpojums %}
+        <div class="div-1">
+            <h3>Klienta informācija</h3>
+            <p>{{ pakalpojums.klients_info() }}</p>
+        </div>
+        {% endif %}
     </main>
     <footer>
         <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>

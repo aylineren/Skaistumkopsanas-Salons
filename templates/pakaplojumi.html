@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pieteikt tikšanos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
+</head>
+<body>
+    <header>
+        <h1><a href="/">Annas Salons</a></h1>
+        <nav>
+            <a href="/pakalpojumi">Pakalpojumi</a>
+            {% if not logged_in %}
+                <a href="/registreties">Reģistrēties</a>
+                <a href="/pieteikties">Pieteikties</a>
+            {% else %}
+                <a href="/klienti">Klienti</a>
+                <a href="/tiksanas">Tikšanās</a>
+                <a href="{{ url_for('logout') }}">Izrakstīties</a>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        <h2>Pieteikt tikšanos</h2>
+        <div class="div-1">
+            <b>Kategorija:</b> {{ pak.kategorija }}<br>
+            <b>Nosaukums:</b> {{ pak.nosaukums }}<br>
+            <b>Cena:</b> {{ pak.cena }} €
+        </div>
+        <form method="POST">
+            <div class="div-2">
+                <label for="datums">Datums:</label>
+                <input type="date" id="datums" name="datums" required>
+            </div>
+            <div class="div-2">
+                <label for="sakuma_laiks">Sākuma laiks:</label>
+                <input type="time" id="sakuma_laiks" name="sakuma_laiks" required>
+            </div>
+            <div class="div-2">
+                <label for="beigu_laiks">Beigu laiks:</label>
+                <input type="time" id="beigu_laiks" name="beigu_laiks" required>
+            </div>
+            <button type="submit">Pieteikt tikšanos</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>
+    </footer>
+</body>
+</html>

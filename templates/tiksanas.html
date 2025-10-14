@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
     <title>Tikšanās</title>
 </head>
 <body>
@@ -22,6 +22,38 @@
         </nav>
     </header>
     <main>
+        <h2>Manas tikšanās</h2>
+        {% if appointments and appointments|length > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kategorija</th>
+                        <th>Nosaukums</th>
+                        <th>Cena</th>
+                        <th>Datums</th>
+                        <th>Sākuma laiks</th>
+                        <th>Beigu laiks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in appointments %}
+                    <tr>
+                        <td>{{ appt.kategorija }}</td>
+                        <td>{{ appt.nosaukums }}</td>
+                        <td>{{ appt.cena }} €</td>
+                        <td>{{ appt.datums }}</td>
+                        <td>{{ appt.sakuma_laiks }}</td>
+                        <td>{{ appt.beigu_laiks }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="div-1">
+                <p>Jums nav nevienas tikšanās.</p>
+                <p><a href="{{ url_for('pakalpojumi') }}">Pievienot tikšanos</a></p>
+            </div>
+        {% endif %}
     </main>
     <footer>
         <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>

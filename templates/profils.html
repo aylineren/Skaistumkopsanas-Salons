@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profila rediģēšana</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
+</head>
+<body>
+    <header>
+        <h1><a href="/">Annas Salons</a></h1>
+    </header>
+    <main>
+        <h2>Profila rediģēšana</h2>
+        <form method="POST">
+            <div class="div-2">
+                <label for="vards">Klienta vārds:</label>
+                <input type="text" id="vards" name="vards" value="{{ user.vards or '' }}" required>
+            </div>
+            <div class="div-2">
+                <label for="uzvards">Klienta uzvārds:</label>
+                <input type="text" id="uzvards" name="uzvards" value="{{ user.uzvards or '' }}" required>
+            </div>
+            <div class="div-2">
+                <label for="pk">Klienta personas kods:</label>
+                <input type="text" id="pk" name="pk" value="{{ user.pk or '' }}" required>
+            </div>
+            <div class="div-2">
+                <label for="tel_numurs">Klienta telefona numurs:</label>
+                <input type="text" id="tel_numurs" name="tel_numurs" value="{{ user.tel_numurs or '' }}" required>
+            </div>
+            <button type="submit">Saglabāt</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>
+    </footer>
+</body>
+</html>

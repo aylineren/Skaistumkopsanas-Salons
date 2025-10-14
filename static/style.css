@@ -1,9 +1,10 @@
-
 body{  
     font-family:Garamond, Arial, Helvetica, Sans-serif,serif;
-    font-size:15px;
+    font-size:20px;
     color:#ffffff;
-    background-image: url(flowers.jpg);
+    background-image: url('./flowers.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
     background-color: #26382c;
     margin: auto; 
     justify-content: center;
@@ -71,6 +72,32 @@ div{
 
 footer{
     vertical-align: bottom;
+    justify-content: center;
+    margin: auto; 
+    display: flex; 
+}
+
+span{
+    font-size:22px;
+    justify-content: center;
+    margin: auto; 
+    display: flex; 
+}
+
+header{
+  background-color: #f1f1f1;
+  text-align: center;
+  padding: 10px;
+}
+
+li{
+    list-style-type: none;
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid #ffffff;
+    background-color: #743030;
+    border-radius: 15px;
+    width: 300px;
     justify-content: center;
     margin: auto; 
     display: flex; 

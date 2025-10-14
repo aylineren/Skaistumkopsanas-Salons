@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
     <title>Annas Salons</title>
+    <style type="text/css"> 
+</style>
 </head>
-<body background="flowers.jpg">
     <header>
         <h1><a href="/">Annas Salons</a></h1>
         <nav>
@@ -17,6 +18,7 @@
             {% else %}
                 <a href="/klienti">Klienti</a>
                 <a href="/tiksanas">Tikšanās</a>
+                <a href="/profils">Profils</a>
                 <a href="{{ url_for('logout') }}">Izrakstīties</a>
             {% endif %}
         </nav>
@@ -38,6 +40,18 @@
             <h2>Šis ir tavs izskats,</h2>
             <h3>esi pats labākais</h3>
         </div>
+        {% if pakalpojums %}
+        <div class="div-1">
+            <h3>Pakalpojuma informācija</h3>
+            <p>{{ pakalpojums.pakalpojuma_info() }}</p>
+            <p>Kopējā cena: {{ pakalpojums.cena_kopa() }} €</p>
+            <p>Ilgums: {{ pakalpojums.pakalpojuma_ilgums() }} min</p>
+        </div>
+        <div class="div-1">
+            <h3>Klienta informācija</h3>
+            <p>{{ pakalpojums.klients_info() }}</p>
+        </div>
+        {% endif %}
     </main>
     <footer>
         <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>

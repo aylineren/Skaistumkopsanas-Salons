@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
     <title>Pieteikties</title>
 </head>
 <body>
@@ -11,10 +11,7 @@
         <h1><a href="/">Annas Salons</a></h1>
         <nav>
             <a href="/pakalpojumi">Pakalpojumi</a>
-            {% if not logged_in %}
-                <a href="/registreties">Reģistrēties</a>
-                <a href="/pieteikties">Pieteikties</a>
-            {% else %}
+            {% if logged_in %}
                 <a href="/klienti">Klienti</a>
                 <a href="/tiksanas">Tikšanās</a>
                 <a href="{{ url_for('logout') }}">Izrakstīties</a>
