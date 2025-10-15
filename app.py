@@ -252,13 +252,16 @@ def registreties():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        vards = request.form.get('vards')
-        uzvards = request.form.get('uzvards')
-        pk = request.form.get('pk')
+        vards = normalize_name(request.form.get('vards'))
+        uzvards = normalize_name(request.form.get('uzvards'))
+        pk = normalize_pk(request.form.get('pk'))
         tel_numurs = request.form.get('tel_numurs')
         email = request.form.get('email')
         if not username or not password or not email:
             flash('Lūdzu, ievadiet lietotājvārdu, paroli un e-pastu!', 'danger')
+            return render_template('registreties.html')
+        if not validate_pk(pk):
+            flash('Personas kods jābūt formātā xxxxxx-xxxxx!', 'danger')
             return render_template('registreties.html')
         try:
             conn = get_db()
@@ -320,11 +323,14 @@ def profils():
         flash('Lietotājs nav atrasts!', 'danger')
         return redirect(url_for('home'))
     if request.method == 'POST':
-        vards = request.form['vards']
-        uzvards = request.form['uzvards']
-        pk = request.form['pk']
+        vards = normalize_name(request.form['vards'])
+        uzvards = normalize_name(request.form['uzvards'])
+        pk = normalize_pk(request.form['pk'])
         tel_numurs = request.form['tel_numurs']
         email = request.form['email']
+        if not validate_pk(pk):
+            flash('Personas kods jābūt formātā xxxxxx-xxxxx!', 'danger')
+            return render_template('profils.html', user=user, is_admin=(session.get('username') == ADMIN_USERNAME))
         c.execute('UPDATE klienti SET vards=?, uzvards=?, pk=?, tel_numurs=?, email=? WHERE username=?',
                   (vards, uzvards, pk, tel_numurs, email, session['username']))
         conn.commit()
@@ -336,6 +342,22 @@ def profils():
 @app.context_processor
 def inject_user():
     return dict(logged_in=('username' in session), username=session.get('username'))
+
+def normalize_name(name):
+    if not name:
+        return ""
+    return name[0].upper() + name[1:].lower()
+
+def normalize_pk(pk):
+    import re
+    pk_digits = re.sub(r'\D', '', pk)
+    if len(pk_digits) == 11:
+        return pk_digits[:6] + '-' + pk_digits[6:]
+    return pk
+
+def validate_pk(pk):
+    import re
+    return re.fullmatch(r'\d{6}-\d{5}', pk) is not None
 
 if __name__ == '__main__':
     import sys
