@@ -128,7 +128,35 @@ def is_profile_complete(user_row):
 
 @app.route('/')
 def home():
-    return render_template('home.html', is_admin=(session.get('username') == ADMIN_USERNAME))
+    pakalpojums = None
+    if 'username' in session:
+        conn = get_db()
+        c = conn.cursor()
+        c.execute('SELECT * FROM klienti WHERE username=?', (session['username'],))
+        user = c.fetchone()
+        if user:
+            c.execute('''SELECT a.*, p.kategorija, p.nosaukums, p.cena, p.atlaide
+                         FROM appointments a
+                         JOIN pakalpojumi p ON a.pakalpojuma_id = p.id
+                         WHERE a.klienta_id=?
+                         ORDER BY a.datums DESC, a.sakuma_laiks DESC LIMIT 1''', (user['id'],))
+            appt = c.fetchone()
+            if appt:
+                pakalpojums = Skaistumkopsana(
+                    pakalpojuma_kategorija=appt['kategorija'],
+                    pakalpojuma_nosaukums=appt['nosaukums'],
+                    pakalpojuma_atlaide=appt['atlaide'],
+                    pakalpojuma_cena=appt['cena'],
+                    klients_vards=user['vards'],
+                    klients_uzvards=user['uzvards'],
+                    klients_pk=user['pk'],
+                    klients_tel_numurs=user['tel_numurs'],
+                    pakalpojuma_datums=appt['datums'],
+                    pakalpojuma_sakuma_laiks=appt['sakuma_laiks'],
+                    pakalpojuma_beigu_laiks=appt['beigu_laiks']
+                )
+        conn.close()
+    return render_template('home.html', is_admin=(session.get('username') == ADMIN_USERNAME), pakalpojums=pakalpojums)
 
 @app.route('/pakalpojumi', methods=['GET', 'POST'])
 def pakalpojumi():
@@ -144,7 +172,19 @@ def pakalpojumi():
             conn.commit()
             flash('Pakalpojums pievienots!', 'success')
     c.execute('SELECT * FROM pakalpojumi')
-    pakalpojumi = c.fetchall()
+    pakalpojumi_rows = c.fetchall()
+    # Use Skaistumkopsana objects
+    pakalpojumi = [
+        Skaistumkopsana.ar_parametriem(
+            pak_kategorija=pack['kategorija'],
+            pak_nosaukums=pack['nosaukums'],
+            atlaide=pack['atlaide'],
+            cena=pack['cena']
+        )
+        for pack in pakalpojumi_rows
+    ]
+    for i, pack in enumerate(pakalpojumi):
+        pack.id = pakalpojumi_rows[i]['id']
     conn.close()
     return render_template('pakalpojumi.html', pakalpojumi=pakalpojumi, is_admin=(session.get('username') == ADMIN_USERNAME))
 
@@ -154,7 +194,16 @@ def klienti():
     c = conn.cursor()
     try:
         c.execute('SELECT vards, uzvards, pk, tel_numurs, email, username FROM klienti')
-        klienti = c.fetchall()
+        klienti_rows = c.fetchall()
+        klienti = [
+            Skaistumkopsana(
+                klients_vards=row['vards'],
+                klients_uzvards=row['uzvards'],
+                klients_pk=row['pk'],
+                klients_tel_numurs=row['tel_numurs']
+            )
+            for row in klienti_rows
+        ]
     except Exception as e:
         klienti = []
         flash('Kļūda datubāzē: ' + str(e), 'danger')
@@ -168,9 +217,9 @@ def tiksanas():
     conn = get_db()
     c = conn.cursor()
     is_admin = (session.get('username') == ADMIN_USERNAME)
+    appointments_list = []
     if is_admin:
-        c.execute('''
-            SELECT a.*, p.kategorija, p.nosaukums, p.cena, p.atlaide,
+        c.execute('''SELECT a.*, p.kategorija, p.nosaukums, p.cena, p.atlaide,
                    k.vards AS klienta_vards, k.uzvards AS klienta_uzvards, k.username AS klienta_username
             FROM appointments a
             JOIN pakalpojumi p ON a.pakalpojuma_id = p.id
@@ -178,33 +227,51 @@ def tiksanas():
             ORDER BY a.datums DESC, a.sakuma_laiks DESC
         ''')
         appointments = c.fetchall()
+        for appt in appointments:
+            obj = Skaistumkopsana(
+                pakalpojuma_kategorija=appt['kategorija'],
+                pakalpojuma_nosaukums=appt['nosaukums'],
+                pakalpojuma_atlaide=appt['atlaide'],
+                pakalpojuma_cena=appt['cena'],
+                klients_vards=appt['klienta_vards'],
+                klients_uzvards=appt['klienta_uzvards'],
+                pakalpojuma_datums=appt['datums'],
+                pakalpojuma_sakuma_laiks=appt['sakuma_laiks'],
+                pakalpojuma_beigu_laiks=appt['beigu_laiks']
+            )
+            appt_dict = dict(appt)
+            appt_dict['cena_kopa'] = obj.cena_kopa()
+            appt_dict['pakalpojums_obj'] = obj
+            appointments_list.append(appt_dict)
     else:
         c.execute('SELECT * FROM klienti WHERE username=?', (session['username'],))
         user = c.fetchone()
         if not user:
             flash('Lietotājs nav atrasts!', 'danger')
             return redirect(url_for('home'))
-        c.execute('''
-            SELECT a.*, p.kategorija, p.nosaukums, p.cena, p.atlaide
+        c.execute('''SELECT a.*, p.kategorija, p.nosaukums, p.cena, p.atlaide
             FROM appointments a
             JOIN pakalpojumi p ON a.pakalpojuma_id = p.id
             WHERE a.klienta_id=?
             ORDER BY a.datums DESC, a.sakuma_laiks DESC
         ''', (user['id'],))
         appointments = c.fetchall()
-    # Calculate discounted price for each appointment
-    appointments_list = []
-    for pak in appointments:
-        cena = pak['cena']
-        atlaide = pak['atlaide'] if 'atlaide' in pak.keys() and pak['atlaide'] is not None else 0
-        try:
-            atlaide_val = float(str(atlaide).replace('%',''))
-        except:
-            atlaide_val = 0
-        cena_kopa = round(float(cena) * (1 - atlaide_val/100), 2)
-        pak_dict = dict(pak)
-        pak_dict['cena_kopa'] = cena_kopa
-        appointments_list.append(pak_dict)
+        for appt in appointments:
+            obj = Skaistumkopsana(
+                pakalpojuma_kategorija=appt['kategorija'],
+                pakalpojuma_nosaukums=appt['nosaukums'],
+                pakalpojuma_atlaide=appt['atlaide'],
+                pakalpojuma_cena=appt['cena'],
+                klients_vards=user['vards'],
+                klients_uzvards=user['uzvards'],
+                pakalpojuma_datums=appt['datums'],
+                pakalpojuma_sakuma_laiks=appt['sakuma_laiks'],
+                pakalpojuma_beigu_laiks=appt['beigu_laiks']
+            )
+            appt_dict = dict(appt)
+            appt_dict['cena_kopa'] = obj.cena_kopa()
+            appt_dict['pakalpojums_obj'] = obj
+            appointments_list.append(appt_dict)
     conn.close()
     return render_template('tiksanas.html', appointments=appointments_list, is_admin=is_admin)
 
@@ -227,14 +294,17 @@ def rezervet_appointment(pak_id):
     if not pak:
         flash('Pakalpojums nav atrasts!', 'danger')
         return redirect(url_for('pakalpojumi'))
-    # Calculate discounted price
-    cena = pak['cena']
-    atlaide = pak['atlaide'] if 'atlaide' in pak.keys() and pak['atlaide'] is not None else 0
-    try:
-        atlaide_val = float(str(atlaide).replace('%',''))
-    except:
-        atlaide_val = 0
-    cena_kopa = round(float(cena) * (1 - atlaide_val/100), 2)
+    pak_obj = Skaistumkopsana(
+        pakalpojuma_kategorija=pak['kategorija'],
+        pakalpojuma_nosaukums=pak['nosaukums'],
+        pakalpojuma_atlaide=pak['atlaide'],
+        pakalpojuma_cena=pak['cena'],
+        klients_vards=user['vards'],
+        klients_uzvards=user['uzvards'],
+        klients_pk=user['pk'],
+        klients_tel_numurs=user['tel_numurs']
+    )
+    cena_kopa = pak_obj.cena_kopa()
     if request.method == 'POST':
         datums = request.form['datums']
         sakuma_laiks = request.form['sakuma_laiks']
@@ -245,7 +315,7 @@ def rezervet_appointment(pak_id):
         flash('Tikšanās pievienota!', 'success')
         return redirect(url_for('tiksanas'))
     conn.close()
-    return render_template('rezervet.html', pak=pak, cena_kopa=cena_kopa, is_admin=(session.get('username') == ADMIN_USERNAME))
+    return render_template('rezervet.html', pak=pak_obj, cena_kopa=cena_kopa, is_admin=(session.get('username') == ADMIN_USERNAME))
 
 @app.route('/registreties', methods=['GET', 'POST'])
 def registreties():

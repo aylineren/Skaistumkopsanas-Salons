@@ -41,19 +41,6 @@
     <h2>Šis ir tavs izskats,</h2>
     <p>esi pats labākais</p>
     <a href="/pakalpojumi"><button class="btn-drk"> Rezervēt tagad</button></a>
-    </section>
-        {% if pakalpojums %}
-        <div class="div-1">
-            <h3>Pakalpojuma informācija</h3>
-            <p>{{ pakalpojums.pakalpojuma_info() }}</p>
-            <p>Kopējā cena: {{ pakalpojums.cena_kopa() }} €</p>
-            <p>Ilgums: {{ pakalpojums.pakalpojuma_ilgums() }} min</p>
-        </div>
-        <div class="div-1">
-            <h3>Klienta informācija</h3>
-            <p>{{ pakalpojums.klients_info() }}</p>
-        </div>
-        {% endif %}
     </main>
     <footer>
         <p>&copy; 2025 Annas Skaistumkopšanas Salons</p>

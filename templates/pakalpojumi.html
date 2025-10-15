@@ -37,10 +37,10 @@
         <div class="pakalpojumi-grid">
             {% for pack in pakalpojumi %}
             <div class="div-1 pakalpojums-item">
-                <b>{{ pack.kategorija }}</b> - {{ pack.nosaukums }}<br>
-                Cena: {{ pack.cena }} €<br>
-                {% if pack.atlaide is defined %}
-                    Atlaide: {{ pack.atlaide }}%<br>
+                <b>{{ pack.pakalpojuma_kategorija }}</b> - {{ pack.pakalpojuma_nosaukums }}<br>
+                Cena: {{ pack.pakalpojuma_cena }} €<br>
+                {% if pack.pakalpojuma_atlaide %}
+                    Atlaide: {{ pack.pakalpojuma_atlaide }}%<br>
                 {% endif %}
                 <a href="{{ url_for('rezervet_appointment', pak_id=pack.id) }}"><button class="btn-li">Pieteikt tikšanos</button></a>
             </div>
